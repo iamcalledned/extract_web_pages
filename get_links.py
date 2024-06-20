@@ -6,13 +6,16 @@ def extract_links(url):
         # Launch a headless browser
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
-        
+
         # Retry mechanism for navigating to the URL
         max_retries = 3
         for attempt in range(max_retries):
             try:
                 print(f"Opening the webpage... Attempt {attempt + 1}")
-                page.goto(url, wait_until="load", timeout=60000)  # Wait for the page to load fully
+                page.goto(url, wait_until="domcontentloaded", timeout=60000)  # Wait for the page to load fully
+                
+                # Wait for an element that is only present on the actual page
+                page.wait_for_selector("a", timeout=60000)
                 print("Page loaded successfully.")
                 break
             except Exception as e:
@@ -24,7 +27,7 @@ def extract_links(url):
                     print("Max retries reached. Exiting.")
                     browser.close()
                     return
-        
+
         # Print the page title to confirm that the page has loaded
         try:
             print("Page title:", page.title())
