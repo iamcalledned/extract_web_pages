@@ -31,6 +31,14 @@ def extract_links(url):
         except Exception as e:
             print(f"Failed to retrieve the page title: {e}")
 
+        # Print the HTML content to verify rendering
+        try:
+            print("Rendered HTML content:")
+            content = page.content()
+            print(content[:1000])  # Print first 1000 characters for brevity
+        except Exception as e:
+            print(f"Failed to retrieve page content: {e}")
+
         # Find all <a> tags (which define hyperlinks)
         try:
             links = page.query_selector_all("a")
@@ -44,7 +52,8 @@ def extract_links(url):
         for link in links:
             try:
                 href = link.get_attribute("href")
-                print(href)
+                if href:
+                    print(href)
             except Exception as e:
                 print(f"Failed to get href attribute from a link: {e}")
 
@@ -67,4 +76,3 @@ url = "https://www.hope1842.com/"
 
 # Extract links from the webpage
 extract_links(url)
-
