@@ -1,32 +1,35 @@
-import requests
-from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+
+# Configure Chrome options
+chrome_options = Options()
+chrome_options.add_argument("--headless")  # Run in headless mode (no UI)
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
+
+# Initialize the Chrome driver
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
 # URL of the webpage to scrape
 url = 'https://www.hope1842.com/'
 
-# Headers to mimic a browser request
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-}
+# Open the webpage
+driver.get(url)
 
-# Send a GET request to the webpage with headers
-response = requests.get(url, headers=headers)
+# Find all <a> tags (which define hyperlinks)
+links = driver.find_elements(By.TAG_NAME, 'a')
 
-# Check if the request was successful
-if response.status_code == 200:
-    # Parse the HTML content of the page
-    soup = BeautifulSoup(response.content, 'html.parser')
-    
-    # Find all <a> tags (which define hyperlinks)
-    links = soup.find_all('a')
+# Open a file to write the links to
+with open('links.txt', 'w') as file:
+    for link in links:
+        href = link.get_attribute('href')
+        if href:  # Check if the href attribute exists
+            file.write(href + '\n')
 
-    # Open a file to write the links to
-    with open('links.txt', 'w') as file:
-        for link in links:
-            href = link.get('href')
-            if href:  # Check if the href attribute exists
-                file.write(href + '\n')
+# Close the browser
+driver.quit()
 
-    print("Links have been successfully extracted and written to 'links.txt'")
-else:
-    print(f"Failed to retrieve the webpage. Status code: {response.status_code}")
+print("Links have been successfully extracted and written to 'links.txt'")
