@@ -1,4 +1,5 @@
 from playwright.sync_api import sync_playwright
+import time
 
 def extract_links(url):
     with sync_playwright() as p:
@@ -6,37 +7,60 @@ def extract_links(url):
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         
-        # Go to the webpage
-        print("Opening the webpage...")
-        page.goto(url)
-
-        # Wait for the page to load and the necessary elements to appear
-        print("Waiting for the page to load...")
-        page.wait_for_timeout(10000)  # Wait for 10 seconds for the page to fully load
+        # Retry mechanism for navigating to the URL
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                print(f"Opening the webpage... Attempt {attempt + 1}")
+                page.goto(url, wait_until="load", timeout=60000)  # Wait for the page to load fully
+                print("Page loaded successfully.")
+                break
+            except Exception as e:
+                print(f"Error occurred: {e}")
+                if attempt < max_retries - 1:
+                    print("Retrying...")
+                    time.sleep(5)
+                else:
+                    print("Max retries reached. Exiting.")
+                    browser.close()
+                    return
         
         # Print the page title to confirm that the page has loaded
-        print("Page title:", page.title())
+        try:
+            print("Page title:", page.title())
+        except Exception as e:
+            print(f"Failed to retrieve the page title: {e}")
 
         # Find all <a> tags (which define hyperlinks)
-        links = page.query_selector_all("a")
+        try:
+            links = page.query_selector_all("a")
+        except Exception as e:
+            print(f"Failed to find links on the page: {e}")
+            browser.close()
+            return
 
         # Print out the links found
         print("Found links:")
         for link in links:
-            href = link.get_attribute("href")
-            print(href)
+            try:
+                href = link.get_attribute("href")
+                print(href)
+            except Exception as e:
+                print(f"Failed to get href attribute from a link: {e}")
 
         # Open a file to write the links to
-        with open("links.txt", "w") as file:
-            for link in links:
-                href = link.get_attribute("href")
-                if href:  # Check if the href attribute exists
-                    file.write(href + "\n")
+        try:
+            with open("links.txt", "w") as file:
+                for link in links:
+                    href = link.get_attribute("href")
+                    if href:  # Check if the href attribute exists
+                        file.write(href + "\n")
+            print("Links have been successfully extracted and written to 'links.txt'")
+        except Exception as e:
+            print(f"Failed to write links to file: {e}")
 
         # Close the browser
         browser.close()
-
-    print("Links have been successfully extracted and written to 'links.txt'")
 
 # URL of the webpage to scrape
 url = "https://www.hope1842.com/"
