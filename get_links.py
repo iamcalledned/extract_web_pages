@@ -1,4 +1,4 @@
-from selenium import webdriver
+from seleniumwire import webdriver  # Import from seleniumwire
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
