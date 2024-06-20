@@ -63,8 +63,9 @@ def extract_links(url):
                 child_links = set()  # Use a set to avoid duplicates
                 try:
                     print(f"Processing link: {main_link}")
-                    page.goto(main_link, wait_until="domcontentloaded", timeout=60000)
-                    page.wait_for_selector("a", timeout=60000)
+                    # Navigate to the main link with a timeout
+                    page.goto(main_link, wait_until="domcontentloaded", timeout=30000)  # 30-second timeout for each child link
+                    page.wait_for_selector("a", timeout=30000)
 
                     # Find all <a> tags on the child page
                     child_page_links = page.query_selector_all("a")
