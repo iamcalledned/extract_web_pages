@@ -23,11 +23,17 @@ url = 'https://www.hope1842.com/'
 
 # Open the webpage
 print("Opening the webpage...")
-driver.get(url)
+try:
+    driver.get(url)
+except Exception as e:
+    print(f"Failed to open the webpage: {e}")
+    driver.quit()
+    exit()
 
 # Wait for the initial page to load and pass the bot protection
 try:
     # Wait for the page to show a title other than "Just a moment..."
+    print("Waiting for page to load...")
     WebDriverWait(driver, 60).until_not(EC.title_contains("Just a moment..."))
     
     # Additional wait to ensure all dynamic content loads
@@ -41,25 +47,38 @@ except Exception as e:
     exit()
 
 # Print the page title to confirm that the page has loaded
-print("Page title:", driver.title)
+try:
+    print("Page title:", driver.title)
+except Exception as e:
+    print(f"Failed to retrieve the page title: {e}")
 
 # Find all <a> tags (which define hyperlinks)
-links = driver.find_elements(By.TAG_NAME, 'a')
+try:
+    links = driver.find_elements(By.TAG_NAME, 'a')
+except Exception as e:
+    print(f"Failed to find links on the page: {e}")
+    driver.quit()
+    exit()
 
 # Print out the links found
 print("Found links:")
 for link in links:
-    href = link.get_attribute('href')
-    print(href)
+    try:
+        href = link.get_attribute('href')
+        print(href)
+    except Exception as e:
+        print(f"Failed to get href attribute from a link: {e}")
 
 # Open a file to write the links to
-with open('links.txt', 'w') as file:
-    for link in links:
-        href = link.get_attribute('href')
-        if href:  # Check if the href attribute exists
-            file.write(href + '\n')
+try:
+    with open('links.txt', 'w') as file:
+        for link in links:
+            href = link.get_attribute('href')
+            if href:  # Check if the href attribute exists
+                file.write(href + '\n')
+    print("Links have been successfully extracted and written to 'links.txt'")
+except Exception as e:
+    print(f"Failed to write links to file: {e}")
 
 # Close the browser
 driver.quit()
-
-print("Links have been successfully extracted and written to 'links.txt'")
