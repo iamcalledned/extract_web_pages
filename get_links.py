@@ -82,3 +82,4 @@ except Exception as e:
 
 # Close the browser
 driver.quit()
+
