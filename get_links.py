@@ -4,8 +4,13 @@ from bs4 import BeautifulSoup
 # URL of the webpage to scrape
 url = 'https://www.hope1842.com/'
 
-# Send a GET request to the webpage
-response = requests.get(url)
+# Headers to mimic a browser request
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+}
+
+# Send a GET request to the webpage with headers
+response = requests.get(url, headers=headers)
 
 # Check if the request was successful
 if response.status_code == 200:
