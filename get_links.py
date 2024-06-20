@@ -12,10 +12,14 @@ response = session.get(url)
 # Render the JavaScript
 response.html.render(timeout=30)
 
+# Debug: Print the HTML content to verify rendering
+print("Rendered HTML content:")
+print(response.html.html[:1000])  # Print first 1000 characters for brevity
+
 # Find all <a> tags (which define hyperlinks)
 links = response.html.find('a')
 
-# Print out the links found
+# Debug: Print out the links found
 print("Found links:")
 for link in links:
     href = link.attrs.get('href')
