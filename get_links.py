@@ -3,9 +3,12 @@ import time
 
 def extract_links(url):
     with sync_playwright() as p:
-        # Launch a headless browser
-        browser = p.chromium.launch(headless=True)
+        # Launch a browser
+        browser = p.chromium.launch(headless=False)  # Switch to headful if needed
         page = browser.new_page()
+
+        # Set user agent to mimic a real browser
+        page.set_user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 
         # Retry mechanism for navigating to the URL
         max_retries = 3
