@@ -1,5 +1,6 @@
 from playwright.sync_api import sync_playwright
 import time
+import csv
 
 def extract_links(url):
     with sync_playwright() as p:
@@ -33,48 +34,47 @@ def extract_links(url):
                     browser.close()
                     return
 
-        # Print the page title to confirm that the page has loaded
+        # Find all <a> tags (which define hyperlinks) on the main page
         try:
-            print("Page title:", page.title())
+            main_links = page.query_selector_all("a")
         except Exception as e:
-            print(f"Failed to retrieve the page title: {e}")
-
-        # Print the HTML content to verify rendering
-        try:
-            print("Rendered HTML content:")
-            content = page.content()
-            print(content[:1000])  # Print first 1000 characters for brevity
-        except Exception as e:
-            print(f"Failed to retrieve page content: {e}")
-
-        # Find all <a> tags (which define hyperlinks)
-        try:
-            links = page.query_selector_all("a")
-        except Exception as e:
-            print(f"Failed to find links on the page: {e}")
+            print(f"Failed to find links on the main page: {e}")
             browser.close()
             return
 
-        # Print out the links found
-        print("Found links:")
-        for link in links:
-            try:
-                href = link.get_attribute("href")
-                if href:
-                    print(href)
-            except Exception as e:
-                print(f"Failed to get href attribute from a link: {e}")
+        # Extract href attributes from the main page links
+        main_page_links = []
+        for link in main_links:
+            href = link.get_attribute("href")
+            if href:
+                main_page_links.append(href)
 
-        # Open a file to write the links to
-        try:
-            with open("links.txt", "w") as file:
-                for link in links:
-                    href = link.get_attribute("href")
-                    if href:  # Check if the href attribute exists
-                        file.write(href + "\n")
-            print("Links have been successfully extracted and written to 'links.txt'")
-        except Exception as e:
-            print(f"Failed to write links to file: {e}")
+        # Open a CSV file to write the links to
+        with open("links.csv", "w", newline='') as csvfile:
+            csvwriter = csv.writer(csvfile)
+            csvwriter.writerow(["Original Link", "Child Links"])
+
+            # Visit each link found on the main page and extract additional links
+            for main_link in main_page_links:
+                child_links = set()  # Use a set to avoid duplicates
+                try:
+                    page.goto(main_link, wait_until="domcontentloaded", timeout=60000)
+                    page.wait_for_selector("a", timeout=60000)
+
+                    # Find all <a> tags on the child page
+                    child_page_links = page.query_selector_all("a")
+                    for link in child_page_links:
+                        href = link.get_attribute("href")
+                        if href and href not in main_page_links:  # Avoid duplicates with main page links
+                            child_links.add(href)
+
+                    # Write the original link and its child links to the CSV file
+                    csvwriter.writerow([main_link, "; ".join(child_links)])
+
+                except Exception as e:
+                    print(f"Failed to process link {main_link}: {e}")
+
+        print("Links have been successfully extracted and written to 'links.csv'")
 
         # Close the browser
         browser.close()
