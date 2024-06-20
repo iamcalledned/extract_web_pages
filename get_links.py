@@ -19,8 +19,17 @@ url = 'https://www.hope1842.com/'
 # Open the webpage
 driver.get(url)
 
+# Print the page title to confirm that the page has loaded
+print("Page title:", driver.title)
+
 # Find all <a> tags (which define hyperlinks)
 links = driver.find_elements(By.TAG_NAME, 'a')
+
+# Print out the links found
+print("Found links:")
+for link in links:
+    href = link.get_attribute('href')
+    print(href)
 
 # Open a file to write the links to
 with open('links.txt', 'w') as file:
