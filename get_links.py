@@ -1,6 +1,7 @@
 from playwright.sync_api import sync_playwright
 import time
 import csv
+from urllib.parse import urljoin
 
 def extract_links(url):
     with sync_playwright() as p:
@@ -46,8 +47,9 @@ def extract_links(url):
         main_page_links = []
         for link in main_links:
             href = link.get_attribute("href")
-            if href:
-                main_page_links.append(href)
+            if href and not href.startswith('#'):  # Filter out invalid URLs
+                full_url = urljoin(url, href)  # Resolve relative URLs
+                main_page_links.append(full_url)
 
         # Open a CSV file to write the links to
         with open("links.csv", "w", newline='') as csvfile:
@@ -65,8 +67,9 @@ def extract_links(url):
                     child_page_links = page.query_selector_all("a")
                     for link in child_page_links:
                         href = link.get_attribute("href")
-                        if href and href not in main_page_links:  # Avoid duplicates with main page links
-                            child_links.add(href)
+                        if href and not href.startswith('#') and href not in main_page_links:  # Avoid duplicates and invalid URLs
+                            full_url = urljoin(main_link, href)  # Resolve relative URLs
+                            child_links.add(full_url)
 
                     # Write the original link and its child links to the CSV file
                     csvwriter.writerow([main_link, "; ".join(child_links)])
