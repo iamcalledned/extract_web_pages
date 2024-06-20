@@ -12,6 +12,7 @@ chrome_options.add_argument("--headless")  # Run in headless mode (no UI)
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--window-size=1920,1080")  # Set window size to ensure page elements load correctly
+chrome_options.add_argument("--disable-blink-features=AutomationControlled")  # Prevent detection
 
 # Initialize the Chrome driver
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
@@ -20,17 +21,22 @@ driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), opti
 url = 'https://www.hope1842.com/'
 
 # Open the webpage
+print("Opening the webpage...")
 driver.get(url)
 
-# Wait for the actual content to load
+# Enhanced wait logic
 try:
-    # Wait for an element that is expected on the main page
-    WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
+    # Wait for the initial page to load
+    print("Waiting for the page to load...")
+    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
+    
     # Additional wait to ensure all dynamic content loads
-    WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.TAG_NAME, 'a')))
+    print("Waiting for dynamic content to load...")
+    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.TAG_NAME, 'a')))
+    
     print("Page loaded successfully.")
 except Exception as e:
-    print(f"An error occurred: {e}")
+    print(f"An error occurred while loading the page: {e}")
     driver.quit()
     exit()
 
