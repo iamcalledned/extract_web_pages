@@ -51,6 +51,8 @@ def extract_links(url):
                 full_url = urljoin(url, href)  # Resolve relative URLs
                 main_page_links.append(full_url)
 
+        print(f"Found {len(main_page_links)} links on the main page.")
+
         # Open a CSV file to write the links to
         with open("links.csv", "w", newline='') as csvfile:
             csvwriter = csv.writer(csvfile)
@@ -60,6 +62,7 @@ def extract_links(url):
             for main_link in main_page_links:
                 child_links = set()  # Use a set to avoid duplicates
                 try:
+                    print(f"Processing link: {main_link}")
                     page.goto(main_link, wait_until="domcontentloaded", timeout=60000)
                     page.wait_for_selector("a", timeout=60000)
 
@@ -73,6 +76,7 @@ def extract_links(url):
 
                     # Write the original link and its child links to the CSV file
                     csvwriter.writerow([main_link, "; ".join(child_links)])
+                    print(f"Child links for {main_link}: {len(child_links)} found.")
 
                 except Exception as e:
                     print(f"Failed to process link {main_link}: {e}")
